@@ -37,7 +37,7 @@ end;
   but you can change it in the Create constructor of the ROWebServer class.
   
   
-  ***Beta 0.0.2***
+  ***Beta 0.1.2***
 
 
   
