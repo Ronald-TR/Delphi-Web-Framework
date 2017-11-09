@@ -1,5 +1,8 @@
 unit uROWebServer;
-
+/*
+  Ronald Rodrigues Farias
+  last commit : 09/11/2017
+*/
 interface
 uses
   idHTTP,
@@ -78,48 +81,40 @@ var
   params : array of TValue;
   i : integer;
 begin
-  if ARequestInfo.Command = 'POST' then
-  begin
-       streamData := ARequestInfo.PostStream;
+    if ARequestInfo.Command = 'POST' then
+    begin
+         streamData := ARequestInfo.PostStream;
 
-       if Assigned(streamData) then
-       begin
-           streamData.Position := 0;
-           sPostData := ReadStringFromStream(streamData);
+         if Assigned(streamData) then
+         begin
+             streamData.Position := 0;
+             sPostData := ReadStringFromStream(streamData);
 
-           ojsPost := TJSONObject.ParseJSONValue(sPostData) as TJSONObject;
-           try
-               SetLength(params, ojsPost.Count);
-               for i:= 0 to ojsPost.Count-1 do
-               begin
-                  params[i] := ojsPost.Pairs[i].JsonValue.Value;
-               end;
-               sResult := ojsPost.ToString;
-           finally
-               ojsPost.Free;
-           end;
+             ojsPost := TJSONObject.ParseJSONValue(sPostData) as TJSONObject;
+             try
+                 SetLength(params, ojsPost.Count);
+                 for i:= 0 to ojsPost.Count-1 do
+                 begin
+                     params[i] := ojsPost.Pairs[i].JsonValue.Value;
+                 end;
+                 sResult := ojsPost.ToString;
+             finally
+                 ojsPost.Free;
+             end;
            
-       end;
-  end;
+         end;
+    end;
 
+    sURIClass  := ARequestInfo.URI.Split(['/'])[1];
+    sURIMethod := ARequestInfo.URI.Split(['/'])[2];
+    sQualifiedNameClass := Self.FListOfRecursos.Values[sURIClass];
 
-  sURIClass  := ARequestInfo.URI.Split(['/'])[1];
-  sURIMethod := ARequestInfo.URI.Split(['/'])[2];
-  sQualifiedNameClass := Self.FListOfRecursos.Values[sURIClass];
+    sResult := Self.ExecRecurso(sURIClass,sURIMethod, params);
 
-
-
-  sResult := Self.ExecRecurso(sURIClass,sURIMethod, params);
-
-
-
-  if sQualifiedNameClass.IsEmpty then
-      AResponseInfo.ContentText := 'uris e classes disponiveis: ' + #13 + Self.FListOfRecursos.Text
-  else
-      AResponseInfo.ContentText := sResult;
-
-
-
+    if sQualifiedNameClass.IsEmpty then
+        AResponseInfo.ContentText := 'uris e classes disponiveis: ' + #13 + Self.FListOfRecursos.Text
+    else
+        AResponseInfo.ContentText := sResult;
 end;
 
 class procedure TROWebServer.ReleaseInstance;
