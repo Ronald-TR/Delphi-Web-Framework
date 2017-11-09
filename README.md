@@ -1,7 +1,7 @@
 # Delphi-Web-Framework
 *A Micro **Delphi** Web-Framework composed by an indy http listener and much Rtti*
 
-Alternatively to develop micro services web in delphi.
+Alternatively to develop micro services web in delphi, without a bigger datasnap project or some additional component paid.
 
 ## Using this you have a few resources very usefull  ## 
 * Instantly run
