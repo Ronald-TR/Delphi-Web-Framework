@@ -40,10 +40,8 @@ implementation
 { TROWebServer }
 
 procedure TROWebServer.AddRecurso(a_Recurso : TClass ; a_URI: string);
-var
-a : tclass;
 begin
-  FListOfRecursos.AddPair(a_URI, a_Recurso.QualifiedClassName);
+   FListOfRecursos.AddPair(a_URI, a_Recurso.QualifiedClassName);
 end;
 
 constructor TROWebServer.Create;
@@ -99,9 +97,8 @@ begin
                sResult := ojsPost.ToString;
            finally
                ojsPost.Free;
-               //streamData.Free;  // NAO POSSO DAR FREE, POIS SEU PONTEIRO REFERENCIA UM OBJETO DE ARequestInfo
            end;
-
+           
        end;
   end;
 
