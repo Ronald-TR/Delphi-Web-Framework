@@ -76,10 +76,12 @@ procedure TROWebServer.IdHTTPServer1CommandGet(AContext: TIdContext;
 var
   sQualifiedNameClass, sURIClass, sURIMethod : string;
   streamData : TStream;
-  sPostData, sResult : string;
-  ojsPost : TJSONObject;
-  params : array of TValue;
-  i : integer;
+  sPostData  : string;
+  sResult    : string;
+  ojsPost    : TJSONObject;
+  params     : array of TValue;
+  i          : integer;
+  array_URIs : TArray<string>;
 begin
     if ARequestInfo.Command = 'POST' then
     begin
@@ -97,7 +99,6 @@ begin
                  begin
                      params[i] := ojsPost.Pairs[i].JsonValue.Value;
                  end;
-                 sResult := ojsPost.ToString;
              finally
                  ojsPost.Free;
              end;
@@ -105,16 +106,23 @@ begin
          end;
     end;
 
-    sURIClass  := ARequestInfo.URI.Split(['/'])[1];
-    sURIMethod := ARequestInfo.URI.Split(['/'])[2];
+    array_URIs := ARequestInfo.URI.Split(['/']);
+    sURIMethod  := array_URIs[Length(array_URIs)-1];
+
+    array_URIs[Length(array_URIs)-1] := '';
+
+    sURIClass := ''.Join('/', array_URIs);
+
     sQualifiedNameClass := Self.FListOfRecursos.Values[sURIClass];
 
-    sResult := Self.ExecRecurso(sURIClass,sURIMethod, params);
-
     if sQualifiedNameClass.IsEmpty then
-        AResponseInfo.ContentText := 'uris e classes disponiveis: ' + #13 + Self.FListOfRecursos.Text
-    else
-        AResponseInfo.ContentText := sResult;
+    begin
+        AResponseInfo.ContentText := 'uris e classes disponiveis: ' + #13 + Self.FListOfRecursos.Text;
+        exit;
+    end;
+
+    AResponseInfo.ContentText := Self.ExecRecurso(sURIClass,sURIMethod, params);
+
 end;
 
 class procedure TROWebServer.ReleaseInstance;
