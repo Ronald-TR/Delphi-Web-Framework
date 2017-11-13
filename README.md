@@ -22,7 +22,7 @@ begin
   with TROWebServer.GetInstance do
   begin
       StartServer;
-      AddRecurso(TEcho , 'echo');
+      AddRecurso(TEcho , '/echo/');
   end;
 
 end;
