@@ -65,7 +65,7 @@ begin
         end;
 
     finally
-       // rtContext.Free;
+        rtContext.Free;
     end;
 end;
 
