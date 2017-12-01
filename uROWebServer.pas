@@ -82,6 +82,7 @@ var
   params     : array of TValue;
   i          : integer;
   array_URIs : TArray<string>;
+  sValue     : string;
 begin
     if ARequestInfo.Command = 'POST' then
     begin
@@ -97,7 +98,15 @@ begin
                  SetLength(params, ojsPost.Count);
                  for i:= 0 to ojsPost.Count-1 do
                  begin
-                     params[i] := ojsPost.Pairs[i].JsonValue.Value;
+                     { VERIFICO SE O VALOR DO PAIR É UM OBJETO OU UM DADO SIMPLES }
+                     sValue := ojsPost.Pairs[i].JsonValue.Value;
+
+                     if sValue.IsEmpty then
+                     begin
+                        sValue := ojsPost.Pairs[i].JsonValue.ToString
+                     end;
+
+                     params[i] := sValue;
                  end;
              finally
                  ojsPost.Free;
