@@ -105,13 +105,11 @@ begin
                      begin
                         sValue := ojsPost.Pairs[i].JsonValue.ToString
                      end;
-
                      params[i] := sValue;
                  end;
              finally
                  ojsPost.Free;
              end;
-           
          end;
     end;
 
