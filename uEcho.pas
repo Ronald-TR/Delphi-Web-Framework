@@ -2,7 +2,7 @@ unit uEcho;
 
 interface
 
-uses u_UtilsWebServer;
+uses u_UtilsWebServer, uROWebServer;
 type
   TEcho = class
   private
@@ -31,6 +31,7 @@ end;
 function TEcho.echoteste: string;
 begin
   Result := 'Teste echo Web Framework';
+  TROWebServer.GetInstance.ResponseInfo.ContentType := 'text/xml'; // DIGO QUAL O FORMATO DA RESPOSTA
 end;
 
 function TEcho.index: string;
