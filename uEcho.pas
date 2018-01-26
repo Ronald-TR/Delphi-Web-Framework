@@ -31,12 +31,13 @@ end;
 function TEcho.echoteste: string;
 begin
   Result := 'Teste echo Web Framework';
-  TROWebServer.GetInstance.ResponseInfo.ContentType := 'text/xml'; // DIGO QUAL O FORMATO DA RESPOSTA
+  TROWebServer.GetInstance.ResponseInfo.ContentType := 'text/html'; // DIGO QUAL O FORMATO DA RESPOSTA
 end;
 
 function TEcho.index: string;
 begin
   Result := RenderTemplate('templates/index.html', 'teste', Self);
+  TROWebServer.GetInstance.ResponseInfo.ContentType := 'text/html'; // DIGO QUAL O FORMATO DA RESPOSTA
 end;
 
 end.
