@@ -1,7 +1,7 @@
 unit uROWebServer;
 {
   Ronald Rodrigues Farias
-  last ver..: 26/01/2018
+  last ver..: 31/01/2018
 }
 interface
 uses
@@ -9,12 +9,12 @@ uses
   IdHTTPServer,
   System.Classes,
   Generics.Collections,
-  Vcl.Dialogs,
   System.Rtti,
   IdContext, IdCustomHTTPServer,
   System.SysUtils,
   System.Variants,
-  IdGlobal, System.JSON;
+  IdGlobal, System.JSON,
+  uROMiddlewaresWS;
 type
 
     TParamsValue = Array of TValue;
@@ -31,6 +31,9 @@ type
     private
       FidServer : TidHTTPServer;
       FListOfRecursos : TStringList;
+      FROMiddlewares : TStringList;
+
+      FRequestInfo : TIdHTTPRequestInfo;
       FResponseInfo : TIdHTTPResponseInfo;
 
       procedure IdHTTPServerCommandGet(AContext: TIdContext;
@@ -39,12 +42,17 @@ type
       procedure IDHTTPServerException(AContext: TIdContext;
       AException : Exception);
 
+      procedure OnParseAuthentication(AContext: TIdContext; const AAuthType, AAuthData: String; var VUsername, VPassword: String; var VHandled: Boolean);
+
       constructor Create;
       destructor Destroy; override;
 
       function ifPost(ABody : TStream; AResources: String): TRouteInfo;
       function ifGet(AResources : String): TRouteInfo;
       function ExtractMetaDataFromRequest(ARequest : TIdHTTPRequestInfo): TRouteInfo;
+
+      function MiddlewareValidator(ARouteInfo : TRouteInfo) : Boolean;
+      function isMiddlewareExists(ARouteInfo : TRouteInfo): Boolean;
 
     public
       function ResponseInfo: TIdHTTPResponseInfo;
@@ -56,9 +64,9 @@ type
 
       function ExecRecurso(a_classname, a_metodo : string; a_params : array of TValue): string;
       procedure StartServer;
-      procedure AddRecurso(a_Recurso : TClass ; a_URI: string);
 
-
+      procedure AddRecurso(a_Recurso : TClass ; a_URI: string); overload;
+      procedure AddMiddleware(AClass : TClass; AROMiddleware : TROMiddleware);
     end;
 
 implementation
@@ -75,13 +83,20 @@ begin
     Result := FResponseInfo;
 end;
 
+
 constructor TROWebServer.Create;
 begin
    Self.FListOfRecursos := TStringList.Create;
-   Self.FidServer := TIdHTTPServer.Create(nil);
-   Self.FidServer.DefaultPort := 8002;
+   Self.FROMiddlewares  := TStringList.Create;
+   Self.FROMiddlewares.OwnsObjects := True;
+   Self.FidServer       := TIdHTTPServer.Create(nil);
+   Self.ResetPort(8002);
    Self.FidServer.OnCommandGet := Self.IdHTTPServerCommandGet;
-   Self.FidServer.OnException := Self.IdHTTPServerException;
+   Self.FidServer.OnException  := Self.IdHTTPServerException;
+
+
+   Self.FidServer.OnParseAuthentication :=  Self.OnParseAuthentication;
+  // Self.FidServer.OnParseAuthentication :=  nil;
 end;
 
 destructor TROWebServer.Destroy;
@@ -89,6 +104,7 @@ begin
    Self.FidServer.Active := False;
    Self.FidServer.Free;
    Self.FListOfRecursos.Free;
+   Self.FROMiddlewares.Free;
   inherited;
 end;
 
@@ -113,8 +129,14 @@ var
   oRouteInfo : TRouteInfo;
 begin
     FResponseInfo := AResponseInfo;
+    FRequestInfo  := ARequestInfo;
 
     oRouteInfo := ExtractMetaDataFromRequest(ARequestInfo);
+
+    if isMiddlewareExists(oRouteInfo) then
+       if not MiddlewareValidator(oRouteInfo) then
+          raise EIdHTTPServerError.Create('Bloqueio por Middleware');
+
 
     // CASO A URL NÃO SEJA ENCONTRADA, LISTA TODAS AS DISPONIVEIS
     if oRouteInfo.FQualifiedClassName.IsEmpty then
@@ -237,34 +259,34 @@ begin
 
     sURIClass := ''.Join('/', array_URIs);
 
-     if Assigned(ABody) then
-     begin
-         ABody.Position := 0;
-         sPostData := ReadStringFromStream(ABody).Replace('"{', '{', [rfReplaceAll, rfIgnoreCase])
-                                                      .Replace('}"', '}', [rfReplaceAll, rfIgnoreCase]);
+    if Assigned(ABody) then
+    begin
+        ABody.Position := 0;
+        sPostData := ReadStringFromStream(ABody).Replace('"{', '{', [rfReplaceAll, rfIgnoreCase])
+                                                     .Replace('}"', '}', [rfReplaceAll, rfIgnoreCase]);
 
-         ojsPost := TJSONObject.ParseJSONValue(sPostData) as TJSONObject;
-         try
-             SetLength(params, ojsPost.Count);
-             for i:= 0 to ojsPost.Count-1 do
-             begin
-                 // VERIFICO SE O VALOR DO PAIR É UM OBJETO OU UM DADO SIMPLES
-                 sValue := ojsPost.Pairs[i].JsonValue.Value;
+        ojsPost := TJSONObject.ParseJSONValue(sPostData) as TJSONObject;
+        try
+            SetLength(params, ojsPost.Count);
+            for i:= 0 to ojsPost.Count-1 do
+            begin
+                // VERIFICO SE O VALOR DO PAIR É UM OBJETO OU UM DADO SIMPLES
+                sValue := ojsPost.Pairs[i].JsonValue.Value;
 
-                 if sValue.IsEmpty then
-                 begin
-                    sValue := ojsPost.Pairs[i].JsonValue.ToString;
-                 end;
+                if sValue.IsEmpty then
+                begin
+                   sValue := ojsPost.Pairs[i].JsonValue.ToString;
+                end;
 
-                 params[i] := sValue;
-             end;
-         finally
-             ojsPost.Free;
-         end;
-     end;
-     Result.FQualifiedClassName := FListOfRecursos.Values[sURIClass];
-     Result.FMethod := sURIMethod;
-     Result.FResources := params;
+                params[i] := sValue;
+            end;
+        finally
+            ojsPost.Free;
+        end;
+    end;
+    Result.FQualifiedClassName := FListOfRecursos.Values[sURIClass];
+    Result.FMethod := sURIMethod;
+    Result.FResources := params;
 end;
 
 function TROWebServer.ExecRecurso(a_classname, a_metodo : string; a_params : array of TValue): string;
@@ -281,5 +303,48 @@ begin
        rtContext.Free;
     end;
 end;
+
+function TROWebServer.MiddlewareValidator(ARouteInfo : TRouteInfo): Boolean;
+var
+   indexOfMiddleware : integer;
+
+begin
+    Result := False;
+    indexOfMiddleware := FROMiddlewares.IndexOf(ARouteInfo.FQualifiedClassName);
+    if indexOfMiddleware <> -1 then
+    begin
+       Result := TROMiddleware(FROMiddlewares.Objects[indexOfMiddleware]).
+                      Validate(Self.FRequestInfo.RawHeaders);
+    end;
+end;
+
+procedure TROWebServer.OnParseAuthentication(AContext: TIdContext;
+  const AAuthType, AAuthData: String; var VUsername, VPassword: String;
+  var VHandled: Boolean);
+begin
+   //   ('ver o que fazer aqui posteriormente');
+      VHandled := True;
+end;
+
+procedure TROWebServer.AddMiddleware(AClass : TClass; AROMiddleware: TROMiddleware);
+begin
+    Self.FROMiddlewares.AddObject(AClass.QualifiedClassName, AROMiddleware);
+end;
+
+function TROWebServer.isMiddlewareExists(ARouteInfo : TRouteInfo): Boolean;
+var
+ i : integer;
+begin
+    Result := False;
+    for i :=0 to FROMiddlewares.Count-1 do
+    begin
+        if FROMiddlewares[i] = ARouteInfo.FQualifiedClassName then
+        begin
+           Result := True;
+           Break;
+        end;
+    end;
+end;
+
 
 end.
