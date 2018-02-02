@@ -67,9 +67,9 @@ end;
 function TMiddlewareToken.Validate(ARequestHeaders : TStringList): boolean;
 var
   oToken : TJWT;
+  oKey   : TJWK;
   sToken : String;
   i : integer;
-  oteste : TJOseBytes;
 begin
     Result := False;
     for I := 0 to ARequestHeaders.Count -1 do
@@ -86,11 +86,15 @@ begin
        Exit;
 
     try
-       oToken := TJOSE.Verify(TJWK.Create(Self.FKey), sToken);
+       oKey := TJWK.Create(Self.FKey);
+       oToken := TJOSE.Verify(oKey, sToken);
        if oToken <> nil then
-          Result := oToken.verified;
-    except
-       // pass
+       begin
+          Result := oToken.verified and (oToken.Claims.Expiration > Now);
+       end;
+    finally
+       oToken.Free;
+       oKey.Free;
     end;
 
 end;
