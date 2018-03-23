@@ -106,5 +106,10 @@ end;
   
   ***Beta 1.0.1***
 
+Next Features:
 
+* RouteInfo Object Context
+* Asynchronous support (for concurrency requests)
+* Explained routes and error description in realtime for wrong requests to the server (in JSON or SPA)
+* Log support
   
