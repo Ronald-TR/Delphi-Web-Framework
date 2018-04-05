@@ -2,14 +2,14 @@ unit uROMiddlewaresWS;
 
  {
     PARA CRIAR SEU PROPRIO MIDDLEWARE, CRIE UMA CLASSE QUE POSSUA IROMiddleware
-    COMO ANCESTRAL E IMPLEMENTE SEU METODO VALIDATE ( N√O ESQUECENDO DA ASSINATURA OVERRIDE);
+    COMO ANCESTRAL E IMPLEMENTE SEU METODO VALIDATE ( N√ÉO ESQUECENDO DA ASSINATURA OVERRIDE);
 
     == Tenha TMiddlewareToken como exemplo ==
  }
 interface
 uses
-  {Bcl.Jose.Core.JWT,
-  Bcl.Jose.Core.Builder, Bcl.Jose.Core.JWK,} System.Classes, SysUtils;
+  Bcl.Jose.Core.JWT,
+  Bcl.Jose.Core.Builder, Bcl.Jose.Core.JWK, System.Classes, SysUtils;
 type
   // INTERFACES
   IROMiddleware = interface;
@@ -17,11 +17,11 @@ type
 
   IROMiddleware = interface
       function Validate(ARequestHeaders : TStringList): boolean;
-     // function TokenObject : TJWT;
+      function TokenObject : TJWT;
   end;
 
   IMiddlewareToken = interface
- //    function TokenObject : TJWT;
+     function TokenObject : TJWT;
   end;
 
   TROMiddleware = class(TInterfacedObject, IROMiddleware)
@@ -40,11 +40,11 @@ type
 
   TMiddlewareToken = class(TROMiddleware)
   private
-//     FoKey : TJWK;
-//     FTokenObject : TJWT;
+     FoKey : TJWK;
+     FTokenObject : TJWT;
   public
       function Validate(ARequestHeaders : TStringList): boolean; override;
-//      function TokenObject : TJWT;
+      function TokenObject : TJWT;
 
       constructor Create(AKEY : string); overload;
       constructor Create(AKEY, AToken : string); overload;
@@ -56,8 +56,8 @@ type
 
 implementation
 
-//uses
-//  Bcl.Jose.Core.JWA, Bcl.Jose.Types.Bytes;
+uses
+  Bcl.Jose.Core.JWA, Bcl.Jose.Types.Bytes;
 
 { TMiddlewareToken }
 
@@ -65,7 +65,7 @@ constructor TMiddlewareToken.Create(AKEY, AToken: string);
 begin
      FToken := AToken;
      FKey := AKEY;
-//     FTokenObject := TJOSE.Verify(TJWK.Create(FKEY), AToken);
+     FTokenObject := TJOSE.Verify(TJWK.Create(FKEY), AToken);
 end;
 
 constructor TMiddlewareToken.Create(AKEY: string);
@@ -76,11 +76,11 @@ end;
 destructor TMiddlewareToken.Destroy;
 begin
      Inherited Destroy;
-//     if Self.FTokenObject <> nil then
-//     begin
-//        FreeAndNil(FTokenObject);
-//        FreeAndNil(FoKey);
-//     end;
+     if Self.FTokenObject <> nil then
+     begin
+        FreeAndNil(FTokenObject);
+        FreeAndNil(FoKey);
+     end;
 end;
 
 class function TMiddlewareToken.New(AKEY: string): IROMiddleware;
@@ -95,8 +95,8 @@ end;
 
 function TMiddlewareToken.Validate(ARequestHeaders : TStringList): boolean;
 var
-//  oToken : TJWT;
-//  oKey   : TJWK;
+  oToken : TJWT;
+  oKey   : TJWK;
   sToken : String;
   i : integer;
 begin
@@ -116,35 +116,35 @@ begin
     if sToken = '' then
        Exit;
 
-//    try
-//       oKey := TJWK.Create(Self.FKey);
-//
-//       oToken := TJOSE.Verify(oKey, sToken);
-//
-//       if oToken <> nil then
-//       begin
-//          Result := oToken.verified and (oToken.Claims.Expiration > Now);
-//       end;
-//    finally
-//       oToken.Free;
-//       oKey.Free;
-//    end;
+    try
+       oKey := TJWK.Create(Self.FKey);
+
+       oToken := TJOSE.Verify(oKey, sToken);
+
+       if oToken <> nil then
+       begin
+          Result := oToken.verified and (oToken.Claims.Expiration > Now);
+       end;
+    finally
+       oToken.Free;
+       oKey.Free;
+    end;
 
 end;
 
-//function TMiddlewareToken.TokenObject: TJWT;
-//begin
-//     if not (FTokenObject = nil) then
-//     begin
-//         Self.FTokenObject.Free;
-//         Self.FoKey.Free;
-//     end;
-//
-//     FoKey := TJWK.Create(FKEY);
-//     FTokenObject :=  TJOSE.Verify(FoKey, Self.FToken);
-//
-//     Result := Self.FTokenObject;
-//end;
+function TMiddlewareToken.TokenObject: TJWT;
+begin
+     if not (FTokenObject = nil) then
+     begin
+         Self.FTokenObject.Free;
+         Self.FoKey.Free;
+     end;
+
+     FoKey := TJWK.Create(FKEY);
+     FTokenObject :=  TJOSE.Verify(FoKey, Self.FToken);
+
+     Result := Self.FTokenObject;
+end;
 
 { TROMiddleware }
 
