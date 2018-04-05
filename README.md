@@ -12,8 +12,8 @@ Alternative to develop micro services web in delphi, without a bigger datasnap p
   
   ### Global Context Objects: ###
   ```Delphi
-    TROWebServer.GetInstance.ResponseInfo.ContentType := 'text/xml';
-  // with this object, you can change the response message params.
+    Self.RouteOperationalContext;
+  // with the inherited from TWQViewBase Class, this object turn visible.
   ```
   Alternatively, you can do the same with the RequestInfo object.
   ### RESTful urls modelling: ###
@@ -21,7 +21,7 @@ Alternative to develop micro services web in delphi, without a bigger datasnap p
   ```Delphi
     with TROWebServer.GetInstance do
     begin
-        AddRecurso(TWQExample, '/example/');
+        AddResource(TWQExample, '/example/');
         StartServer;
     end;
   ```
@@ -30,6 +30,7 @@ Alternative to develop micro services web in delphi, without a bigger datasnap p
   ```Delphi
      type
      TWQExample = class
+      [TContentType('application/json')]
       function examplecall(param1, param2 : string): string;
      end;
   ```  
@@ -58,7 +59,7 @@ The framework brings a default Token Middleware validator, that you can use easi
   ```Delphi
     with TROWebServer.GetInstance do
     begin
-        AddRecurso(TWQExample, '/example/');
+        AddResource(TWQExample, '/example/');
         
         AddMiddleware(TWQExample, TMiddlewareToken.Create('your_jwt_secret_key_here'));
         StartServer;
@@ -84,13 +85,14 @@ The framework brings a default Token Middleware validator, that you can use easi
 ```Delphi
 procedure TForm1.FormCreate(Sender: TObject);
 begin
+    with TROWebServer.GetInstance do
+    begin
+       AddResource(TWQEcho, '/');
 
-  with TROWebServer.GetInstance do
-  begin
-      StartServer;
-      AddRecurso(TEcho , '/echo/');
-  end;
-
+       ResetPort(8000);
+       SetExceptionMsgType(HTMLMsg);
+       StartServer;
+    end;
 end;
 ```
 
@@ -106,10 +108,12 @@ end;
   
   ***Beta 1.0.1***
 
-Next Features:
+New Features:
 
 * RouteInfo Object Context
 * Asynchronous support (for concurrency requests)
 * Explained routes and error description in realtime for wrong requests to the server (in JSON or SPA)
-* Log support
+* ContentType return support
+* Simple render template support
+* Exception types in HTML or JSON (explains the resources in real time)
   
