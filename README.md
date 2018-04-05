@@ -3,6 +3,72 @@
 
 Alternative to develop micro services web in delphi, without a bigger datasnap project or some additional component paid.
 
+  ## New Features ##
+  ***For 1.0 version***
+  
+  * Global RequestInfo and ResponseInfo Objects for the current transaction.
+  * RESTful urls modelling support.
+  * Middleware support.
+  
+  ### Global Context Objects: ###
+  ```Delphi
+    TROWebServer.GetInstance.ResponseInfo.ContentType := 'text/xml';
+  // with this object, you can change the response message params.
+  ```
+  Alternatively, you can do the same with the RequestInfo object.
+  ### RESTful urls modelling: ###
+    Now, you can rescue the resources of the url without declare variables explicity:
+  ```Delphi
+    with TROWebServer.GetInstance do
+    begin
+        AddRecurso(TWQExample, '/example/');
+        StartServer;
+    end;
+  ```
+  
+  for an example class:
+  ```Delphi
+     type
+     TWQExample = class
+      function examplecall(param1, param2 : string): string;
+     end;
+  ```  
+  If the request method are GET, in the browser the user can do this:
+  
+  ```http://localhost:8000/example/examplecall/1/2```
+  
+  This says the web server to call the 'examplecall' method in the TWQExample class, using the "1" and "2" wich arguments.
+  
+  If the request method are POST, you must have to send a JSON object with a key for each argument in your method.
+  ```
+  {"param1": 1, "param2": 2}
+  // the key names are irrelevant, fell free to call what you want, just the values will be used.
+  ```
+  The example above explain a valid body for a POST request in the same resource, but, without sending the params in the URL:
+  
+  ```http://localhost:8000/example/examplecall/```
+  
+  Using a valid JSON in the body request like the explained above. You will have the "same" behavior. Be carefull in how your class will be writted to follow the right behavior to GET or POST verbs.
+  
+  ### Middleware support* ###
+  ***See the future helper for this section***
+  
+ Now you can write your own Middleware, for validate the request before the response be proccess in the server.
+The framework brings a default Token Middleware validator, that you can use easily!
+  ```Delphi
+    with TROWebServer.GetInstance do
+    begin
+        AddRecurso(TWQExample, '/example/');
+        
+        AddMiddleware(TWQExample, TMiddlewareToken.Create('your_jwt_secret_key_here'));
+        StartServer;
+    end;
+  ``` 
+  Each time the TWQExample class is called in a request, the corresponding Middleware Object assigned will be called before,
+  
+  if the 'Validate' method of the Middleware returns True, then the request is free to continue, otherwise, the server will be raise an 
+  EidHTTPProtocolException, returning a 500 error code and a "bloqueio por middleware" message.
+
 ## Using this you have a few resources very usefull  ## 
 * **Instantly run**
 
@@ -22,7 +88,7 @@ begin
   with TROWebServer.GetInstance do
   begin
       StartServer;
-      AddRecurso(TEcho , 'echo');
+      AddRecurso(TEcho , '/echo/');
   end;
 
 end;
@@ -37,7 +103,13 @@ end;
   but you can change it in the Create constructor of the ROWebServer class.
   
   
-  ***Beta 0.1.2***
+  
+  ***Beta 1.0.1***
 
+Next Features:
 
+* RouteInfo Object Context
+* Asynchronous support (for concurrency requests)
+* Explained routes and error description in realtime for wrong requests to the server (in JSON or SPA)
+* Log support
   
