@@ -1,10 +1,10 @@
-unit WQViewTest;
+unit WQViewEcho;
 
 interface
 
 uses uClssViewBase;
 type
-    TWQTeste = class(TRView)
+    TWQEcho = class(TRView)
       private
       public
         [TContentType('text/html')]
@@ -20,13 +20,13 @@ uses
 
 { TWQTeste }
 
-function TWQTeste.echohtml(s: string): string;
+function TWQEcho.echohtml(s: string): string;
 begin
   Result := '<p>echo <strong>' + s + '</strong></p> '
             + '<a>For route: ' + Self.RouteOperationalContext.Method + '</a>';
 end;
 
-function TWQTeste.echojson(s: string): string;
+function TWQEcho.echojson(s: string): string;
 var
   sMsg : string;
   oJSMsg : TJSONObject;
@@ -43,6 +43,6 @@ begin
 end;
 
 initialization
-  RegisterClass(TWQTeste);
+  RegisterClass(TWQEcho);
 
 end.
