@@ -19,6 +19,7 @@ Alternative to develop micro services web in delphi, without a bigger datasnap p
   ### RESTful urls modelling: ###
     Now, you can rescue the resources of the url without declare variables explicity:
   ```Delphi
+
     with TROWebServer.GetInstance do
     begin
         AddResource(TWQExample, '/example/');
@@ -84,6 +85,7 @@ The framework brings a default Token Middleware validator, that you can use easi
   **something like this:**
   
 ```Delphi
+uses uROWebServer, WQViewEcho, u_UtilsWebServer;
 procedure TForm1.FormCreate(Sender: TObject);
 begin
     with TROWebServer.GetInstance do
