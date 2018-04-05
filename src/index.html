@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="por">
+  <head>
+    <title>ROWebServer</title>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="static/bootstrap4.min.css">
+   <!-- <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous"> -->
+   <!-- <link href="static/style.css" rel="stylesheet"> -->
+  </head>
+  <body>
+        
+    <div class="jumbotron">
+        <div class="container">
+		{obj}
+		<h1>WebService for project: <strong>{obj.projectname}</strong></h1>
+		<h3>Uris  e Classes disponiveis:</h3>
+            <form class="form-group">
+               {obj.uris}
+            </form>
+			<a></a>
+        </div>
+		{%}
+	</div>
+    
+
+  </body>
+</html>
