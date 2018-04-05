@@ -74,7 +74,7 @@ The framework brings a default Token Middleware validator, that you can use easi
 ## Using this you have a few resources very usefull  ## 
 * **Instantly run**
 
-  It's a singleton, so... you're be able to have a global Context of the current client in your application.
+  It's a singleton, so... just call, add your resources and run the StartServer method!
   
 * **Easly publish resources**
   
@@ -94,6 +94,12 @@ begin
        SetExceptionMsgType(HTMLMsg);
        StartServer;
     end;
+end;
+
+// very important, don't forget to release the singleton
+procedure TForm1.FormDestroy(Sender: TObject);
+begin
+    TROWebServer.ReleaseInstance;
 end;
 ```
 
