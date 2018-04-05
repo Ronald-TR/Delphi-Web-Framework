@@ -52,7 +52,8 @@ Alternative to develop micro services web in delphi, without a bigger datasnap p
   Using a valid JSON in the body request like the explained above. You will have the "same" behavior. Be carefull in how your class will be writted to follow the right behavior to GET or POST verbs.
   
   ### Middleware support* ###
-  ***See the future helper for this section***
+  
+  ***You need the Bcl JWT libraries. See the future helper for this section***
   
  Now you can write your own Middleware, for validate the request before the response be proccess in the server.
 The framework brings a default Token Middleware validator, that you can use easily!
