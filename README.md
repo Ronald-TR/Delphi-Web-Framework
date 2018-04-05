@@ -13,9 +13,9 @@ Alternative to develop micro services web in delphi, without a bigger datasnap p
   ### Global Context Objects: ###
   ```Delphi
     Self.RouteOperationalContext;
-  // with the inherited from TWQViewBase Class, this object turn visible.
+  // when making your views inherit from TRView Class, this object turns visible.
   ```
-  Alternatively, you can do the same with the RequestInfo object.
+  
   ### RESTful urls modelling: ###
     Now, you can rescue the resources of the url without declare variables explicity:
   ```Delphi
@@ -26,10 +26,10 @@ Alternative to develop micro services web in delphi, without a bigger datasnap p
     end;
   ```
   
-  for an example class:
+  for an example View class:
   ```Delphi
      type
-     TWQExample = class
+     TWQExample = class(TRView)
       [TContentType('application/json')]
       function examplecall(param1, param2 : string): string;
      end;
@@ -112,9 +112,10 @@ end;
 New Features:
 
 * RouteInfo Object Context
-* Asynchronous support (for concurrency requests)
+* Asynchronous support (for concurrency requests) (testing)
 * Explained routes and error description in realtime for wrong requests to the server (in JSON or SPA)
 * ContentType return support
 * Simple render template support
+* Static files support (in alpha)
 * Exception types in HTML or JSON (explains the resources in real time)
   
