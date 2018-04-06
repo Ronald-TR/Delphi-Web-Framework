@@ -17,7 +17,7 @@ type
 
   IROMiddleware = interface
       function Validate(ARequestHeaders : TStringList): boolean;
-      function TokenObject : TJWT;
+      //function TokenObject : TJWT;
   end;
 
   IMiddlewareToken = interface
