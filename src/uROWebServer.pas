@@ -146,7 +146,7 @@ begin
            end;
         end);
 
-        // CASO A URL N√O SEJA ENCONTRADA, LISTA TODAS AS DISPONIVEIS
+        // CASO A URL N√ÉO SEJA ENCONTRADA, LISTA TODAS AS DISPONIVEIS
         if (oRouteInfo.QualifiedClassName.IsEmpty) or ((oRouteInfo.RootRoute = '/') and (oRouteInfo.Method.IsEmpty)) then
         begin
             sResponse := get_index_msg(oListOfResources, Self.FExceptionType);
@@ -161,6 +161,12 @@ begin
                 sResponse := Text;
                 AResponseInfo.ContentType := ContentType;
             end;
+            exit;
+        end;
+        // SERVE ARQUIVOS PARA DOWNLOAD
+        if oRouteInfo.Method = 'files' then
+        begin
+            AResponseInfo.ServeFile(AContext, oRouteInfo.FullResource);
             exit;
         end;
 
@@ -233,7 +239,7 @@ begin
            try
               oClass := rtContext.FindType(sClassName).AsInstance.MetaclassType;
            except
-              raise Exception.Create('Classe nao existe no contexto da aplicaÁ„o');
+              raise Exception.Create('Classe nao existe no contexto da aplica√ß√£o');
            end;
            Self.AddResource(oClass, sRoute);
         end;
@@ -323,5 +329,4 @@ begin
 end;
 
 end.
-
 
