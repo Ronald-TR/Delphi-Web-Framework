@@ -96,6 +96,14 @@ begin
               (arrResPath[Length(arrResPath)-1] = 'html') then
            begin
               Result.ContentType := 'text/' + arrResPath[Length(arrResPath)-1];
+           end
+           else if (arrResPath[Length(arrResPath)-1] = 'pdf') then
+           begin
+              Result.ContentType := 'application/' + arrResPath[Length(arrResPath)-1];
+           end
+           else
+           begin
+              Result.ContentType := arrResPath[Length(arrResPath)-1];
            end;
          except
             raise EIdHTTPServerError.Create('recurso nao existe');
