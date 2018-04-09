@@ -13,7 +13,7 @@ uses
   IdHTTPServer,
   uROMiddlewaresWS,
   uClssResource,
-  System.Generics.Collections;
+  System.Generics.Collections, IWSystem;
 
 type
 
@@ -30,6 +30,7 @@ type
       FVerbHTTP : String;
       FResources : TParamsValue;
       FToken : String;
+      FFullResource : String;
       FResourceIndex : integer;
 
       procedure isPost(ABody : TStream; AResources: String; AListOfResources: TList<TResourceInfo>);
@@ -43,6 +44,7 @@ type
       property VerbHTTP           : String          read FVerbHTTP            write FVerbHTTP;
       property Token              : String          read FToken               write FToken;
       property ResourceIndex      : integer         read FResourceIndex;
+      property FullResource       : String          read FFullResource;
 
       constructor Create(ARequestInfo : TidHTTPRequestInfo; AListOfResources : TList<TResourceInfo>);
       destructor Destroy; override;
@@ -76,6 +78,14 @@ begin
       begin
          Self.isGet(ARequestInfo.URI, AListOfResources);
       end;
+
+      // recolho a rota completa do recurso
+     FFullResource := '/' + FMethod;
+     for I := 0 to Length(FResources)-1 do
+       begin
+           FFullResource := FFullResource + '/' + FResources[i].AsString;
+       end;
+       FFullResource := gsAppPath + FFullResource;
 end;
 
 destructor TRouteInfo.Destroy;
@@ -173,7 +183,7 @@ begin
                 SetLength(params, ojsPost.Count);
                 for i:= 0 to ojsPost.Count-1 do
                 begin
-                    // VERIFICO SE O VALOR DO PAIR É UM OBJETO OU UM DADO SIMPLES
+                    // VERIFICO SE O VALOR DO PAIR Ã‰ UM OBJETO OU UM DADO SIMPLES
                     sValue := ojsPost.Pairs[i].JsonValue.Value;
 
                     if sValue.IsEmpty then
@@ -206,5 +216,4 @@ begin
 end;
 
 end.
-
 
