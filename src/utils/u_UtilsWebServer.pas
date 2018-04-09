@@ -71,6 +71,7 @@ function load_static_file(ARouteInfo : TRouteInfo): TViewResult;
 var
   sl : TStringList;
   sResPath : string;
+  arrResPath : TArray<String>;
   i : integer;
 begin
      { recrio a rota para o arquivo estatico }
@@ -90,7 +91,12 @@ begin
            Result.Text := sl.Text;
 
            // recolho a extensao do arquivo estatico como contenttype
-           Result.ContentType := sResPath.Split(['.'])[1];
+           arrResPath := sResPath.Split(['.']);
+           if (arrResPath[Length(arrResPath)-1] = 'css') or
+              (arrResPath[Length(arrResPath)-1] = 'html') then
+           begin
+              Result.ContentType := 'text/' + arrResPath[Length(arrResPath)-1];
+           end;
          except
             raise EIdHTTPServerError.Create('recurso nao existe');
          end;
@@ -432,6 +438,5 @@ begin
 end;
 
 end.
-
 
 
