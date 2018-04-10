@@ -285,8 +285,8 @@ begin
         try
            with TROMiddleware(FROMiddlewares.Objects[indexOfMiddleware]) do
            begin
+               RouteInformationContext := ARouteInfo;
                Result := Validate(ARequestInfo.RawHeaders);
-               ARouteInfo.Token := Token;
            end;
         except
             // pass
