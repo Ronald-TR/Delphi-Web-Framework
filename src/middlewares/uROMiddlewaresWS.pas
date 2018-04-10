@@ -9,7 +9,7 @@ unit uROMiddlewaresWS;
 interface
 uses
   Bcl.Jose.Core.JWT,
-  Bcl.Jose.Core.Builder, Bcl.Jose.Core.JWK, System.Classes, SysUtils;
+  Bcl.Jose.Core.Builder, Bcl.Jose.Core.JWK, System.Classes, SysUtils, uRouteInfo;
 type
   // INTERFACES
   IROMiddleware = interface;
@@ -26,6 +26,7 @@ type
 
   TROMiddleware = class(TInterfacedObject, IROMiddleware)
   protected
+     FRouteInfo: TRouteInfo;
      FToken : String;
      FKey : String;
   public
@@ -34,6 +35,7 @@ type
 
      function Validate(ARequestHeaders : TStringList): boolean; virtual;
      property Token: string   read FToken   write FToken;
+     property RouteInformationContext : TRouteInfo read FRouteInfo write FRouteInfo;
   end;
 
   // default token middleware validator
@@ -97,29 +99,20 @@ function TMiddlewareToken.Validate(ARequestHeaders : TStringList): boolean;
 var
   oToken : TJWT;
   oKey   : TJWK;
-  sToken : String;
   i : integer;
 begin
     Result := False;
-    for I := 0 to ARequestHeaders.Count -1 do
-    begin
-      if ARequestHeaders[i].Contains('Authorization') then
-      begin
-         // SEPARO O "Authorization: " para pegar o token
-         sToken :=  ARequestHeaders[i].Split([':'])[1].Replace(' ', '');
-         Break;
-      end;
-    end;
 
-    FToken := sToken;
+    // obtendo o token do objeto de contexto
+    FToken := Self.RouteInformationContext.Token;
 
-    if sToken = '' then
+    if FToken = '' then
        Exit;
 
     try
        oKey := TJWK.Create(Self.FKey);
 
-       oToken := TJOSE.Verify(oKey, sToken);
+       oToken := TJOSE.Verify(oKey, FToken);
 
        if oToken <> nil then
        begin
@@ -166,5 +159,4 @@ begin
 end;
 
 end.
-
 
