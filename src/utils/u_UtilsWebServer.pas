@@ -12,7 +12,7 @@ uses
   System.Generics.Collections,
   uClssResource,
   uClssViewBase,
-  IdCustomHTTPServer;
+  IdCustomHTTPServer, Vcl.Dialogs;
 
 type
 
@@ -61,7 +61,7 @@ function InvokeInObj(a_Objeto : TObject; a_metodo : string): string;
 { Standard method for rendering variables in template internally, it's who calls the second methods inside itself }
 function ReplaceVARInHTML(a_VarName, a_TextHTML: string; a_Objeto : TObject) : string;
 function ReplaceVARContent(a_VarName, a_Content: string; a_Objeto : TObject) : string;
-
+function ReplaceFORInHTML(a_VarName, a_TextHTML : string; a_Objeto : TObject): string;
 { MD5 short call }
 function MD5(AValue : string) : string;
 
@@ -314,29 +314,20 @@ begin
     Result := '';
     rtContext := TRttiContext.Create;
     try
-        arrMethods := rtContext.GetType(a_Objeto.ClassType).GetMethods;
-        for method in arrMethods do
+        method := rtContext.GetType(a_Objeto.ClassType).GetMethod(a_metodo);
+        if method <> nil then
         begin
-             if method.Name = a_metodo then
-             begin
-                Result := method.Invoke(a_Objeto, []).ToString;
-                Break;
-             end;
+            Result := method.Invoke(a_Objeto, []).ToString;
         end;
 
         if Result.IsEmpty then
         begin
-            arrProperties := rtContext.GetType(a_Objeto.ClassType).GetProperties;
-            for prop in arrProperties do
+            prop := rtContext.GetType(a_Objeto.ClassType).GetProperty(a_metodo);
+            if prop <> nil then
             begin
-                 if prop.Name = a_metodo then
-                 begin
-                    Result := prop.GetValue(a_Objeto).ToString;
-                    Break;
-                 end;
+               Result := prop.GetValue(a_Objeto).ToString;
             end;
         end;
-
     finally
         rtContext.Free;
     end;
@@ -409,6 +400,61 @@ begin
 
         Result := ReplaceVARInHTML(a_VarName, a_TextHTML, a_Objeto);
     end;
+end;
+
+function ReplaceFORInHTML(a_VarName, a_TextHTML : string; a_Objeto : TObject): string;
+var
+  posInicialSentence, contEndSentence, posEndSentence,
+  posFinalFor, i : integer;
+  for_sentence : string;
+  for_body : string;
+  args : TArray<string>;
+  keyobj, valueobj : string;
+  oAux : TObject;
+  sContentBody : string;
+  full_for : string;
+begin
+     posInicialSentence := Pos('{for ', a_TextHTML);
+     // RECOLHE A SENTENÇA DO FOR
+     for I := posInicialSentence to a_TextHTML.Length-1 do
+     begin
+         if a_TextHTML[i] = '}' then
+         begin
+            contEndSentence := i - (posInicialSentence+5);
+            posEndSentence := i;
+            Break;
+         end;
+     end;
+
+     for_sentence := Copy(a_TextHTML, posInicialSentence+5, contEndSentence);
+     args := for_sentence.Split(['in']);
+
+     // RECOLHENDO CHAVE E VALOR DO LAÇO
+     keyobj := args[0].Replace(' ', ''); valueobj := args[1].Replace(' ', '');
+
+     // RECOLHE O CORPO DO FOR
+     for I := posEndSentence+1 to a_TextHTML.Length-1 do
+     begin
+         if (a_TextHTML[i] = '%') and
+         (a_TextHTML[i+1] = '%') and
+         (a_TextHTML[i+2] = '}') then
+         begin
+            posFinalFor := i-2;
+            Break;
+         end;
+     end;
+     for_body := Copy(a_TextHTML, posEndSentence+1, posFinalFor-posEndSentence);
+     full_for := Copy(a_TextHTML, posInicialSentence, (posFinalFor-posInicialSentence)+contEndSentence);
+
+     for oAux in TObjectList<TObject>(a_Objeto) do
+     begin
+         sContentBody := sContentBody + ReplaceVARContent(keyobj, for_body, oAux);
+     end;
+
+     a_TextHTML := a_TextHTML.Replace(full_for, '');
+     a_TextHTML := a_TextHTML.Insert(posInicialSentence+contEndSentence-contEndSentence,sContentBody);
+     Result := a_TextHTML;
+
 end;
 
 function RenderTemplate(PathFile, a_VarName : string; a_Objeto : TObject) : string;
