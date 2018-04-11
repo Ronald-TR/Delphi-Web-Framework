@@ -1,1 +1,10 @@
 __history/
+Win32/
+*.dpr
+*.dproj
+*.identcache
+*.res
+*.stat
+*.local
+uPrincipal.dfm
+uPrincipal.pas
