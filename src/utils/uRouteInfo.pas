@@ -1,4 +1,4 @@
-unit uRouteInfo;
+﻿unit uRouteInfo;
 
 interface
 uses
@@ -11,7 +11,6 @@ uses
   System.Classes,
   System.JSON,
   IdHTTPServer,
-  uROMiddlewaresWS,
   uClssResource,
   System.Generics.Collections, IWSystem;
 

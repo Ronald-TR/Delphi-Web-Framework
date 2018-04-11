@@ -1,4 +1,4 @@
-unit uROMiddlewaresWS;
+﻿unit uROMiddlewaresWS;
 
  {
     PARA CRIAR SEU PROPRIO MIDDLEWARE, CRIE UMA CLASSE QUE POSSUA IROMiddleware
@@ -8,8 +8,8 @@ unit uROMiddlewaresWS;
  }
 interface
 uses
-  Bcl.Jose.Core.JWT,
-  Bcl.Jose.Core.Builder, Bcl.Jose.Core.JWK, System.Classes, SysUtils, uRouteInfo;
+  Jose.Core.JWT,
+  Jose.Core.Builder, Jose.Core.JWK, System.Classes, SysUtils, uRouteInfo;
 type
   // INTERFACES
   IROMiddleware = interface;
@@ -59,7 +59,7 @@ type
 implementation
 
 uses
-  Bcl.Jose.Core.JWA, Bcl.Jose.Types.Bytes;
+  Jose.Core.JWA, Jose.Types.Bytes;
 
 { TMiddlewareToken }
 
