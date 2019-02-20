@@ -121,38 +121,40 @@ var
   sTextResponse,
   sContentType : String;
   rtAttr    : TCustomAttribute;
+  sValue : TValue;
 begin
   rtContext := TRttiContext.Create;
 
   oAux := AResources[ARouteInfo.ResourceIndex].ClassView.Create;
   try
-    if ARouteInfo.Method = 'favicon.ico' then
-       exit;
+      if ARouteInfo.Method = 'favicon.ico' then
+         exit;
 
-    rtMethod := rtContext.GetType(oAux.ClassType)
-                       .GetMethod(ARouteInfo.Method);
-    rtContext.GetType(oAux.ClassType).GetProperty('RouteOperationalContext')
-                        .SetValue(oAux, TValue.From<TRouteInfo>(ARouteInfo));
 
-    if rtMethod = nil then
-       raise Exception.Create('recurso nao existe, por favor reveja sua rota');
+      rtMethod := rtContext.GetType(oAux.ClassType)
+                         .GetMethod(ARouteInfo.Method);
+      rtContext.GetType(oAux.ClassType).GetProperty('RouteOperationalContext')
+                          .SetValue(oAux, TValue.From<TRouteInfo>(ARouteInfo));
 
-    sTextResponse := rtMethod.Invoke(oAux, ARouteInfo.Resources).AsString;
+      if rtMethod = nil then
+         raise Exception.Create('recurso nao existe, por favor reveja sua rota');
 
-    for rtAttr in rtMethod.GetAttributes do
-      begin
-         if rtAttr is TContentType then
-         begin
-            sContentType := TContentType(rtAttr).ContentType;
-            Break;
-         end;
-      end;
+      sValue := rtMethod.Invoke(oAux, ARouteInfo.Resources);
+      sTextResponse := sValue.AsString;
 
+      for rtAttr in rtMethod.GetAttributes do
+        begin
+           if rtAttr is TContentType then
+           begin
+              sContentType := TContentType(rtAttr).ContentType;
+              Break;
+           end;
+        end;
       Result.Text := sTextResponse;
       Result.ContentType := sContentType;
   finally
-    rtContext.Free;
-    oAux.Free;
+      rtContext.Free;
+      oAux.Free;
   end;
 
 end;
@@ -244,22 +246,16 @@ var
   oJS : TJSONObject;
   oJSArr : TJSONArray;
   i : integer;
+  sJSArray, sJSObject : string;
 begin
-
-    oJSArr := TJSONArray.Create;
-    oJS := TJSONObject.Create;
-    oJSArr.Owned := True;
-
     for I := 0 to AListOfResources.Count-1 do
     begin
-        oJS.AddPair(AListOfResources[i].Route, AListOfResources[i].ClassView.QualifiedClassName);
+        if sJSObject.IsEmpty then
+            sJSObject := Format('"%s":"%s"', [AListOfResources[i].Route, AListOfResources[i].ClassView.QualifiedClassName])
+        else
+            sJSObject := sJSObject + ',' + Format('"%s":"%s"', [AListOfResources[i].Route, AListOfResources[i].ClassView.QualifiedClassName]);
     end;
-
-    oJSArr.Add(oJS);
-
-    Result := '{"routes": ' + oJSArr.ToJSON + '}';
-    oJSArr.Free;
-    //oJS.Free;
+    Result := '{"routes":[{' + sJSObject.Replace('/', '\/') + '}]}';
 end;
 
 
@@ -270,34 +266,27 @@ var
   i : integer;
   oJSArr : TJSONArray;
   rtContext : TRttiContext;
+  sJSRoute, sJSArr, sJS : string;
 begin
-    oJS       := TJSONObject.Create;
-    oJS.Owned := False;
-    oJSRoute  := TJSONObject.Create;
-    oJSRoute.Owned := False;
-    oJSArr    := TJSONArray.Create;
-    oJSArr.Owned := False;
-
     rtContext := TRttiContext.Create;
 
+    EMessage := EMessage.Replace(#13, '');
     with rtContext.GetType(AClass) do
     begin
         for I := 0 to Length(GetDeclaredMethods)-1 do
         begin
-           oJSArr.Add(GetDeclaredMethods[i].ToString);
+          if sJSArr.IsEmpty then
+             sJSArr := Format('"%s"', [GetDeclaredMethods[i].ToString])
+          else
+             sJSArr := sJSArr + ',' + Format('"%s"', [GetDeclaredMethods[i].ToString]);
         end;
-        oJSRoute.AddPair(ARootRoute, oJSArr);
-        oJS.AddPair('route', oJSRoute);
-        oJS.AddPair('error', EMessage);
+        sJSRoute := Format('"%s":[%s]', [ARootRoute, sJSArr]);
+        sJS :=      Format('{"%s":{%s, "%s":"%s"}}', ['route', sJSRoute, 'error', EMessage]);
 
     end;
-    try
-        Result := oJS.ToJSON;
-    finally
-        oJS.Free;
-        oJSArr.Free;
-        oJSRoute.Free;
-    end;
+
+    Result := sJS;
+
 end;
 
   {--}
@@ -492,5 +481,3 @@ begin
 end;
 
 end.
-
-
