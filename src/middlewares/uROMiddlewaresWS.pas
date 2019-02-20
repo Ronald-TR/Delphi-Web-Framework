@@ -1,4 +1,4 @@
-﻿unit uROMiddlewaresWS;
+unit uROMiddlewaresWS;
 
  {
     PARA CRIAR SEU PROPRIO MIDDLEWARE, CRIE UMA CLASSE QUE POSSUA IROMiddleware
@@ -159,4 +159,5 @@ begin
 end;
 
 end.
+
 
